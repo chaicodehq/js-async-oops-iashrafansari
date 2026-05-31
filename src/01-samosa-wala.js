@@ -75,12 +75,109 @@
  */
 export function createSamosaCart(ownerName, location) {
   // Your code here
+  return {
+    owner: ownerName,
+    location,
+    menu: {
+      samosa: 15, 
+      jalebi: 20, 
+      kachori: 25
+    },
+
+    sales: [],
+
+
+ 
+    sellItem(itemName, quantity){
+
+      if(!this.menu[itemName] || quantity <= 0) return -1;
+
+
+      const totalPrice = this.menu[itemName] * quantity;
+
+      this.sales.push({
+        item: itemName,
+        quantity,
+        total: totalPrice,
+      });
+      
+      return totalPrice
+
+    },
+
+    getDailySales(){
+
+      if(this.sales.length === 0) return 0;
+
+      return this.sales.reduce((total, item) => {
+        return total + item.total;
+      }, 0);
+    },
+
+    getPopularItem() {
+
+      if(this.sales.length === 0) return null;
+
+      const popularChaat = {};
+
+      this.sales.forEach((chaat) => {
+        if(!popularChaat[chaat.item]){
+          popularChaat[chaat.item] = chaat.quantity;
+        } else {
+          popularChaat[chaat.item] += chaat.quantity;
+        }
+      });
+
+    // popularChaat = {samosa: 10, jalebi: 15, kachori: 5};
+
+    const popularChaatQty = Object.values(popularChaat);
+
+    const popularChaatQtyAsc = popularChaatQty.sort((a, b)=> a - b);
+
+    const popularQty =popularChaatQtyAsc[popularChaatQtyAsc.length - 1];
+
+    const result = Object.entries(popularChaat).find(
+      ([key, value]) => value === popularQty
+    )
+
+    return result[0];
+
+    },
+
+    moveTo(newLocation) {
+      this.location = newLocation;
+      return `${this.owner} ka cart ab ${newLocation} pe hai!`;
+    },
+
+
+    resetDay() {
+      this.sales = [];
+
+    return `${this.owner} ka naya din shuru!`
+
+  },
+
+  }
 }
+  
 
 export function demonstrateThisLoss(cart) {
   // Your code here
+
+
+const sellCart1 = cart.sellItem;
+
+return sellCart1;
+
+
+
 }
 
 export function fixWithBind(cart) {
   // Your code here
+
+
+const sellCart1 = cart.sellItem.bind(cart);
+
+return sellCart1;
 }

@@ -74,16 +74,102 @@
  */
 export function orderChai(type, quantity) {
   // Your code here
+
+    const validTeaType = ["cutting", "special", "ginger", "masala"];
+    const prices = { cutting: 10, special: 20, ginger: 15, masala: 25 }
+
+    return new Promise((res, rej) => {
+      setTimeout(() => {
+        if(!validTeaType.includes(type)) {
+          return rej(new Error("Yeh chai available nahi hai!"))}
+
+        if(quantity <= 0 || typeof quantity !== 'number') {
+          return rej(new Error("Kitni chai chahiye bhai?"))}
+
+        const total = prices[type] * quantity
+        return res({type, quantity, total})
+      }, 100)
+    })
+
 }
 
 export function checkIngredients(ingredient) {
   // Your code here
+
+  const ingredientsList = ["tea", "milk", "sugar", "ginger", "cardamom"];
+
+ return new Promise((res, rej) => {
+  if(!ingredientsList.includes(ingredient)) return rej(new Error(`${ingredient} khatam ho gaya!`))
+
+  return res({ingredient, available: true})  
+ })
+
+
 }
 
 export function prepareChaiWithTimeout(type, timeoutMs) {
   // Your code here
+
+
+    const chaiPromise = orderChai(type, 1);
+
+    const timeoutPromise = new Promise ((res, rej) => {
+      setTimeout(() => {
+        rej(new Error("Bahut der ho gayi, chai nahi bani!"))
+      }, timeoutMs)
+    })
+
+    return Promise.race([chaiPromise, timeoutPromise])
+
 }
 
 export function processChaiQueue(orders) {
   // Your code here
+
+  // orders = [{type, quantity}, {type, quantity}];
+
+  if (orders.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  
+  const promises = orders.map(order => {
+    return orderChai(order.type, order.quantity)
+  })
+
+  return Promise.allSettled(promises)
+  .then(results => {
+    return results.map(order => {
+      if(order.status === "fulfilled")
+        return {
+            status: "fulfilled",
+            value: order.value,
+        }
+
+        return {
+          status: "rejected",
+          reason: order.reason.message,
+        }
+    })
+
+
+  })
+
+
+  
+  
+  /*
+
+   Function: processChaiQueue(orders)
+ *   - Takes array of { type, quantity } objects
+ *   - Processes each order using orderChai
+ *   - Returns Promise that resolves with array of results
+ *   - Each result: { status: "fulfilled", value: orderResult }
+ *     or { status: "rejected", reason: errorMessage }
+ *   - Like Promise.allSettled behavior — ALL orders are attempted,
+ *     failures don't stop other orders
+ *   - Agar orders array empty hai, resolve with empty array
+
+
+  */
 }

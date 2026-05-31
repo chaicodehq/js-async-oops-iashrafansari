@@ -77,29 +77,126 @@
 export class DabbaService {
   constructor(serviceName, area) {
     // Your code here
+    this.serviceName = serviceName;
+    this.area = area;
+    this.customers = [];
+    this._nextId = 1 ;
+
   }
 
   addCustomer(name, address, mealPreference) {
     // Your code here
+    const mealList = ['veg', 'nonveg', 'jain']
+    if (!mealList.includes(mealPreference)) return null;
+
+    const found = this.customers.find((customer) => customer.name === name);
+    if(found) return null;
+
+    const customer = {
+      id: this._nextId++,
+      name,
+      address,
+      mealPreference,
+      active: true,
+      delivered: false
+
+    }
+
+    this.customers.push(customer);
+    return customer;
+
   }
 
   removeCustomer(name) {
     // Your code here
+    const found = this.customers.find((customer) => customer.name === name);
+    if(!found || !found.active ) {
+      return false
+    } else {
+
+      
+      found.active = false;
+      return true;
+    }
+
   }
 
   createDeliveryBatch() {
     // Your code here
+
+    const activeCustomer = this.customers.filter((customer) => customer.active === true);
+
+    if(!activeCustomer) return [];
+
+      const deliveryBatch = [];
+    activeCustomer.map((customer) => {
+
+      const delivery = { 
+      customerId: customer.id, 
+      name: customer.name,
+      address: customer.address,
+      mealPreference: customer.mealPreference,
+      batchTime: new Date().toISOString(),
+      
+      }
+
+      deliveryBatch.push(delivery);
+
+      
+    })
+
+    return deliveryBatch;
+
   }
 
   markDelivered(customerId) {
     // Your code here
+
+    const found = this.customers.find((customer) => customer.id === customerId);
+
+    if(!found) return false;
+
+    found.delivered = true;
+    return true
+  
   }
 
   getDailyReport() {
     // Your code here
+
+    const activeCustomer = this.customers.filter((customer) => customer.active === true);
+
+    const report =  {
+                      totalCustomers: activeCustomer.length,
+                      delivered: 0,
+                      pending: 0,
+                      mealBreakdown: { veg: 0, nonveg: 0, jain: 0 },
+
+                       }
+
+  activeCustomer.forEach((customer) => {
+    if(customer.delivered === true){
+      report.delivered++
+    } else {
+      report.pending++;
+    }
+
+    report.mealBreakdown[customer.mealPreference]++
+
+
+  })
+
+  return report 
+    
+    
   }
 
   getCustomer(name) {
     // Your code here
+
+    const found = this.customers.find((customer) => customer.name === name)
+    if(!found) return null;
+    return found;
   }
 }
+

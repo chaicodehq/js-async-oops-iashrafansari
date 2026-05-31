@@ -89,24 +89,124 @@
  */
 export function prepareOrder(item, prepTime) {
   // Your code here
+
+
+  return new Promise ((resolve, reject) => {
+    if(!item || item === null || item === undefined) return reject(new Error("Item name required!"));
+    if(prepTime <= 0 || typeof prepTime !== "number") return reject(new Error("Invalid prep time!"));
+
+    setTimeout(() => {
+      resolve({
+        item,
+        ready: true,
+        prepTime,
+      })
+    }, prepTime)
+  })
+
+
 }
 
 export function prepareBatch(items) {
   // Your code here
+
+// items = [{name, prepTime}, {}, {}]
+
+  if(items.length === 0) return Promise.resolve([]);
+
+    const promises = items.map((item) => prepareOrder(item.name, item.prepTime));
+
+    return Promise.all(promises);
+  
 }
 
 export function getFirstReady(items) {
   // Your code here
+
+
+  if(items.length === 0) return Promise.reject(new Error("No items to prepare!"));
+
+  const promises = items.map(item => prepareOrder(item.name, item.prepTime));
+  return Promise.race(promises);
+  
 }
 
 export function prepareSafeBatch(items) {
   // Your code here
+
+  if(items.length === 0) return Promise.resolve([]);
+  const promises = items.map(item => prepareOrder(item.name, item.prepTime));
+
+  return Promise.allSettled(promises)
+  .then(results => {return results.map(result => {
+      if(result.status === "fulfilled") {
+        return {
+          status: "fulfilled",
+          value: result.value,
+        }
+      }
+
+      return {
+        status: "rejected",
+        reason: result.reason.message,
+      }
+
+
+
+  })})
+
 }
+
+  
 
 export function deliverWithTimeout(orderPromise, timeoutMs) {
   // Your code here
+
+ if(timeoutMs <= 0) return Promise.reject(new Error("Invalid timeout!"));
+
+ const promiseTimeOut = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    reject(new Error("Delivery timeout!"))
+  }, timeoutMs)
+ })
+
+ return Promise.race([orderPromise, promiseTimeOut])
+
+
 }
 
 export function batchWithRetry(items, maxRetries) {
   // Your code here
+
+  /*
+
+  Function: batchWithRetry(items, maxRetries)
+ *   - Tries prepareBatch(items)
+ *   - If it fails, retries up to maxRetries times
+ *   - Returns result of first successful attempt
+ *   - If all attempts fail, throws the last error
+ *   - maxRetries must be >= 0 (0 means no retries, just one attempt)
+ *   - Each retry is a fresh call to prepareBatch
+
+  */
+
+  function attempt(retriesLeft) {
+
+    return prepareBatch(items)
+      .then(result => result)
+
+      .catch(error => {
+
+        if (retriesLeft === 0) {
+          throw error;
+        }
+
+        return attempt(retriesLeft - 1);
+
+      });
+
+  }
+
+  return attempt(maxRetries);
+  
 }
