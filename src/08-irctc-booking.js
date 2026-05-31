@@ -124,22 +124,15 @@ export async function checkSeatAvailability(trainNumber, date, classType) {
 
 export async function bookTicket(passenger, trainNumber, date, classType) {
   // Your code here
-      if (
-  !passenger.name ||
-  !passenger.age ||
-  !passenger.gender
-) {
-  throw new Error("Invalid passenger details!");
-}
-  
 
-      const ticket = await checkSeatAvailability(trainNumber, date, classType)
+  const ticket = await checkSeatAvailability(trainNumber, date, classType);
 
-      const fare = {SL: 250, "3A": 800, "2A": 1200, "1A": 2000}
+  if(ticket.available !== true) return {status: "waitlisted", waitlistNumber: Math.floor(Math.random() * 20) + 1}
 
-      if(ticket.available !== true) return {status: "waitlisted", waitlistNumber: Math.floor(Math.random() * 20) + 1}
-        
-        return {
+
+  const fare = {SL: 250, "3A": 800, "2A": 1200, "1A": 2000}
+
+  if(passenger.name && passenger.age && passenger.gender) return {
         pnr: "PNR" + Math.floor(Math.random() * 1000000),
         passenger,
         trainNumber,
@@ -147,7 +140,8 @@ export async function bookTicket(passenger, trainNumber, date, classType) {
         class: classType,
         status: "confirmed",
         fare: fare[classType],
-      }
+      };
+ 
   
 }
 
@@ -192,11 +186,10 @@ export async function getBookingStatus(pnr) {
 
 export async function bookMultipleTickets(passengers, trainNumber, date, classType) {
   // Your code here
+/*
 
-// bookTicket(passenger, trainNumber, date, classType)
-  /*
 
-  Function: bookMultipleTickets(passengers, trainNumber, date, classType)
+Function: bookMultipleTickets(passengers, trainNumber, date, classType)
  *   - async function
  *   - Takes array of passenger objects
  *   - Books for EACH passenger SEQUENTIALLY (await in loop, one by one)
@@ -205,55 +198,36 @@ export async function bookMultipleTickets(passengers, trainNumber, date, classTy
  *     in results, continue with next passenger
  *   - Agar passengers array empty, return empty array
 
-  */
-    if(passengers.length === 0 ) return [];
 
-   const results = [];
-    
-   for(const passenger of passengers){
+*/
 
-    try {
+if(passengers.length === 0 ) return [];
 
-      const booking = await bookTicket(
-        passenger,
-        trainNumber,
-        date,
-        classType,
-      )
+const results = [];
 
-      results.push(booking);
-      
-    } catch (error) {
-        results.push({
-          passenger,
-          error: error.message,
-        })
-    }
-
-
-
-
-   }
-  
-
+for(const passenger of passengers){ 
+  try {
+    const booking = await bookTicket(
+      passenger,
+      trainNumber,
+      date,
+      classType,
+    )
+    results.push(booking);
+  } catch (error) {
+    results.push({
+      passenger,
+      error: error.message,
+    });
+  }
+}
 
 return results;
-
-
-
 }
 
 export async function raceBooking(trainNumbers, passenger, date, classType) {
   // Your code here
 
- 
-  
-    const bookingPromises = trainNumbers.map(trainNumber => bookTicket(passenger, trainNumber, date, classType)); 
    
-    try {
-      return await Promise.any(bookingPromises);
-    } catch (error) {
-        throw new Error("Koi bhi train mein seat nahi mili!");
-    }
 
 }
